@@ -1,0 +1,58 @@
+ Import required libraries
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.metrics import confusion_matrix, classification_report, accuracy_score
+
+# ---------------------------------
+# BI-LEVEL CONFUSION MATRIX (Binary Classification)
+# ---------------------------------
+print("==== BI-LEVEL CONFUSION MATRIX ====")
+
+# True labels (actual output)
+y_true_binary = np.array([0, 1, 0, 1, 1, 0, 1, 0, 1, 0])
+
+# Predicted labels (model output)
+y_pred_binary = np.array([0, 1, 0, 0, 1, 0, 1, 1, 1, 0])
+
+# Construct confusion matrix
+cm_binary = confusion_matrix(y_true_binary, y_pred_binary)
+
+# Display Confusion Matrix
+plt.figure(figsize=(5, 4))
+sns.heatmap(cm_binary, annot=True, cmap="Blues", fmt='g')
+plt.title("Bi-Level Confusion Matrix (Binary Classification)")
+plt.xlabel("Predicted Labels")
+plt.ylabel("True Labels")
+plt.show()
+
+# Print performance metrics
+print("Confusion Matrix:\n", cm_binary)
+print("\nClassification Report:\n", classification_report(y_true_binary, y_pred_binary))
+print("Accuracy:", accuracy_score(y_true_binary, y_pred_binary))
+
+
+# ---------------------------------
+# MULTI-LEVEL CONFUSION MATRIX (Multi-Class Classification)
+# ---------------------------------
+print("\n==== MULTI-LEVEL CONFUSION MATRIX ====")
+
+# Example with 3 classes (0, 1, 2)
+y_true_multi = np.array([0, 1, 2, 2, 0, 1, 2, 0, 1, 1, 2, 0])
+y_pred_multi = np.array([0, 2, 1, 2, 0, 1, 2, 0, 0, 1, 2, 1])
+
+# Construct confusion matrix
+cm_multi = confusion_matrix(y_true_multi, y_pred_multi)
+
+# Display Confusion Matrix
+plt.figure(figsize=(6, 5))
+sns.heatmap(cm_multi, annot=True, cmap="Oranges", fmt='g')
+plt.title("Multi-Level Confusion Matrix (3-Class Classification)")
+plt.xlabel("Predicted Labels")
+plt.ylabel("True Labels")
+plt.show()
+
+# Print performance metrics
+print("Confusion Matrix:\n", cm_multi)
+print("\nClassification Report:\n", classification_report(y_true_multi, y_pred_multi))
+print("Accuracy:", accuracy_score(y_true_multi, y_pred_multi))
