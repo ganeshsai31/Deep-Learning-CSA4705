@@ -1,0 +1,104 @@
+# ================================================================
+# Performance Evaluation of K-Nearest Neighbors (KNN) Classifier
+# Using Breast Cancer or Iris Dataset
+# ================================================================
+
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.datasets import load_breast_cancer, load_iris
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.metrics import (
+    confusion_matrix, accuracy_score, precision_score,
+    recall_score, f1_score, ConfusionMatrixDisplay
+)
+
+# -------------------------------
+# STEP 1: Choose Dataset
+# -------------------------------
+use_dataset = "breast_cancer"  # Change to "iris" if needed
+
+if use_dataset == "breast_cancer":
+    data = load_breast_cancer()
+    X = data.data
+    y = data.target
+    print("Using Breast Cancer Dataset")
+else:
+    data = load_iris()
+    X = data.data
+    y = data.target
+    print("Using Iris Dataset")
+
+# -------------------------------
+# STEP 2: Split Data
+# -------------------------------
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42, stratify=y
+)
+
+# -------------------------------
+# STEP 3: Standardize Data
+# -------------------------------
+scaler = StandardScaler()
+X_train = scaler.fit_transform(X_train)
+X_test = scaler.transform(X_test)
+
+# -------------------------------
+# STEP 4: Train KNN Classifier
+# -------------------------------
+k_value = 5  # Number of neighbors
+model = KNeighborsClassifier(n_neighbors=k_value)
+model.fit(X_train, y_train)
+
+# -------------------------------
+# STEP 5: Predictions
+# -------------------------------
+y_pred = model.predict(X_test)
+
+# -------------------------------
+# STEP 6: Performance Metrics
+# -------------------------------
+acc = accuracy_score(y_test, y_pred)
+prec = precision_score(y_test, y_pred, average='weighted')
+rec = recall_score(y_test, y_pred, average='weighted')
+f1 = f1_score(y_test, y_pred, average='weighted')
+cm = confusion_matrix(y_test, y_pred)
+
+# -------------------------------
+# STEP 7: Display Results
+# -------------------------------
+print(f"\n===== PERFORMANCE METRICS (k={k_value}) =====")
+print(f"Accuracy : {acc:.3f}")
+print(f"Precision: {prec:.3f}")
+print(f"Recall   : {rec:.3f}")
+print(f"F1-Score : {f1:.3f}")
+print("\nConfusion Matrix:\n", cm)
+
+# -------------------------------
+# STEP 8: Confusion Matrix Visualization
+# -------------------------------
+labels = data.target_names
+disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=labels)
+disp.plot(cmap="Oranges")
+plt.title(f"Confusion Matrix - KNN ({use_dataset.replace('_',' ').title()})")
+plt.show()
+
+# -------------------------------
+# STEP 9: Accuracy vs K Plot
+# -------------------------------
+acc_values = []
+k_range = range(1, 21)
+
+for k in k_range:
+    knn = KNeighborsClassifier(n_neighbors=k)
+    knn.fit(X_train, y_train)
+    acc_values.append(knn.score(X_test, y_test))
+
+plt.figure(figsize=(7,4))
+plt.plot(k_range, acc_values, marker='o', linestyle='-', color='blue')
+plt.title("Accuracy vs K (Number of Neighbors)")
+plt.xlabel("K Value")
+plt.ylabel("Accuracy")
+plt.grid(True)
+plt.show()
