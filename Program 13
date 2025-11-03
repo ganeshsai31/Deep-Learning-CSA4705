@@ -1,0 +1,103 @@
+# ================================================================
+# Performance Evaluation of Decision Tree Classifier
+# Using Breast Cancer or Iris Dataset
+# ================================================================
+
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.datasets import load_breast_cancer, load_iris
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.tree import DecisionTreeClassifier, plot_tree
+from sklearn.metrics import (
+    confusion_matrix, accuracy_score, precision_score,
+    recall_score, f1_score, ConfusionMatrixDisplay
+)
+
+# -------------------------------
+# STEP 1: Choose Dataset
+# -------------------------------
+use_dataset = "breast_cancer"   # Change to "iris" if needed
+
+if use_dataset == "breast_cancer":
+    data = load_breast_cancer()
+    X = data.data
+    y = data.target   # 0 = malignant, 1 = benign
+    print("Using Breast Cancer Dataset")
+else:
+    data = load_iris()
+    X = data.data
+    y = data.target
+    print("Using Iris Dataset")
+
+# -------------------------------
+# STEP 2: Split Data
+# -------------------------------
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42, stratify=y
+)
+
+# -------------------------------
+# STEP 3: (Optional) Scale Data
+# -------------------------------
+scaler = StandardScaler()
+X_train = scaler.fit_transform(X_train)
+X_test = scaler.transform(X_test)
+
+# -------------------------------
+# STEP 4: Train Decision Tree Model
+# -------------------------------
+model = DecisionTreeClassifier(
+    criterion='entropy',  # 'gini' also works
+    max_depth=None,       # grow tree fully
+    random_state=42
+)
+model.fit(X_train, y_train)
+
+# -------------------------------
+# STEP 5: Predictions
+# -------------------------------
+y_pred = model.predict(X_test)
+
+# -------------------------------
+# STEP 6: Performance Metrics
+# -------------------------------
+acc = accuracy_score(y_test, y_pred)
+prec = precision_score(y_test, y_pred, average='weighted')
+rec = recall_score(y_test, y_pred, average='weighted')
+f1 = f1_score(y_test, y_pred, average='weighted')
+cm = confusion_matrix(y_test, y_pred)
+
+# -------------------------------
+# STEP 7: Display Results
+# -------------------------------
+print("\n===== PERFORMANCE METRICS =====")
+print(f"Accuracy : {acc:.3f}")
+print(f"Precision: {prec:.3f}")
+print(f"Recall   : {rec:.3f}")
+print(f"F1-Score : {f1:.3f}")
+print("\nConfusion Matrix:\n", cm)
+
+# -------------------------------
+# STEP 8: Confusion Matrix Visualization
+# -------------------------------
+labels = data.target_names
+disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=labels)
+disp.plot(cmap="Purples")
+plt.title(f"Confusion Matrix - Decision Tree ({use_dataset.replace('_',' ').title()})")
+plt.show()
+
+# -------------------------------
+# STEP 9: Visualize the Decision Tree
+# -------------------------------
+plt.figure(figsize=(18, 8))
+plot_tree(
+    model,
+    filled=True,
+    feature_names=data.feature_names,
+    class_names=data.target_names,
+    rounded=True,
+    fontsize=8
+)
+plt.title(f"Decision Tree Visualization ({use_dataset.replace('_',' ').title()})")
+plt.show()
