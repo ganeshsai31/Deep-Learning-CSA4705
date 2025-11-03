@@ -1,0 +1,81 @@
+# ==============================================================
+# Performance Evaluation of Neural Network Architecture
+# Based on Hidden Layers, Neurons, Learning Rate & Activation
+# ==============================================================
+
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.datasets import make_moons
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense
+from tensorflow.keras.optimizers import Adam
+
+# -------------------------------
+# STEP 1: Dataset Preparation
+# -------------------------------
+X, y = make_moons(n_samples=1000, noise=0.25, random_state=42)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+scaler = StandardScaler()
+X_train = scaler.fit_transform(X_train)
+X_test = scaler.transform(X_test)
+
+# -------------------------------
+# STEP 2: Function to Build MLP
+# -------------------------------
+def build_mlp(hidden_layers=1, hidden_neurons=8, activation='relu', learning_rate=0.01):
+    model = Sequential()
+    model.add(Dense(hidden_neurons, input_dim=2, activation=activation))
+    for _ in range(hidden_layers - 1):
+        model.add(Dense(hidden_neurons, activation=activation))
+    model.add(Dense(1, activation='sigmoid'))
+    optimizer = Adam(learning_rate=learning_rate)
+    model.compile(loss='binary_crossentropy', optimizer=optimizer, metrics=['accuracy'])
+    return model
+
+# -------------------------------
+# STEP 3: Experiment Configurations
+# -------------------------------
+configs = [
+    (1, 4, 0.01, 'relu'),
+    (2, 8, 0.01, 'relu'),
+    (3, 16, 0.01, 'relu'),
+    (2, 8, 0.1, 'relu'),
+    (2, 8, 0.01, 'tanh'),
+    (2, 8, 0.01, 'sigmoid'),
+]
+
+results = {}
+
+# -------------------------------
+# STEP 4: Train Models and Record Performance
+# -------------------------------
+for layers, neurons, lr, act in configs:
+    print(f"\nTraining: Layers={layers}, Neurons={neurons}, LR={lr}, Act={act}")
+    model = build_mlp(hidden_layers=layers, hidden_neurons=neurons, activation=act, learning_rate=lr)
+    history = model.fit(X_train, y_train, epochs=50, batch_size=16, verbose=0, validation_data=(X_test, y_test))
+    acc = history.history['val_accuracy'][-1]
+    results[(layers, neurons, lr, act)] = acc
+
+# -------------------------------
+# STEP 5: Display Results
+# -------------------------------
+print("\n===== PERFORMANCE SUMMARY =====")
+for (l, n, lr, act), acc in results.items():
+    print(f"Layers: {l}, Neurons: {n}, LR: {lr}, Act: {act:7s} -> Accuracy: {acc:.3f}")
+
+# -------------------------------
+# STEP 6: Visualize Performance
+# -------------------------------
+labels = [f"L{l}-N{n}-{act}-lr{lr}" for (l, n, lr, act) in results.keys()]
+acc_values = list(results.values())
+
+plt.figure(figsize=(10,5))
+plt.barh(labels, acc_values, color='skyblue')
+plt.xlabel("Validation Accuracy")
+plt.ylabel("Model Configuration")
+plt.title("Neural Network Performance Comparison")
+plt.grid(axis='x')
+plt.show()
