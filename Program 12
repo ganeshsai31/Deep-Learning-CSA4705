@@ -1,0 +1,101 @@
+# ================================================================
+# Performance Evaluation of Random Forest Classifier
+# Using Breast Cancer or Iris Dataset
+# ================================================================
+
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.datasets import load_breast_cancer, load_iris
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import (
+    confusion_matrix, accuracy_score, precision_score,
+    recall_score, f1_score, ConfusionMatrixDisplay
+)
+
+# -------------------------------
+# STEP 1: Choose Dataset
+# -------------------------------
+use_dataset = "breast_cancer"   # Change to "iris" if needed
+
+if use_dataset == "breast_cancer":
+    data = load_breast_cancer()
+    X = data.data
+    y = data.target   # 0 = malignant, 1 = benign
+    print("Using Breast Cancer Dataset")
+else:
+    data = load_iris()
+    X = data.data
+    y = data.target
+    print("Using Iris Dataset")
+
+# -------------------------------
+# STEP 2: Split Data
+# -------------------------------
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42, stratify=y
+)
+
+# -------------------------------
+# STEP 3: (Optional) Scale Data
+# -------------------------------
+scaler = StandardScaler()
+X_train = scaler.fit_transform(X_train)
+X_test = scaler.transform(X_test)
+
+# -------------------------------
+# STEP 4: Train Random Forest Model
+# -------------------------------
+model = RandomForestClassifier(
+    n_estimators=100,       # number of trees
+    max_depth=None,         # allow trees to grow fully
+    random_state=42
+)
+model.fit(X_train, y_train)
+
+# -------------------------------
+# STEP 5: Predictions
+# -------------------------------
+y_pred = model.predict(X_test)
+
+# -------------------------------
+# STEP 6: Performance Metrics
+# -------------------------------
+acc = accuracy_score(y_test, y_pred)
+prec = precision_score(y_test, y_pred, average='weighted')
+rec = recall_score(y_test, y_pred, average='weighted')
+f1 = f1_score(y_test, y_pred, average='weighted')
+cm = confusion_matrix(y_test, y_pred)
+
+# -------------------------------
+# STEP 7: Display Results
+# -------------------------------
+print("\n===== PERFORMANCE METRICS =====")
+print(f"Accuracy : {acc:.3f}")
+print(f"Precision: {prec:.3f}")
+print(f"Recall   : {rec:.3f}")
+print(f"F1-Score : {f1:.3f}")
+print("\nConfusion Matrix:\n", cm)
+
+# -------------------------------
+# STEP 8: Confusion Matrix Visualization
+# -------------------------------
+labels = data.target_names
+disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=labels)
+disp.plot(cmap="Greens")
+plt.title(f"Confusion Matrix - Random Forest ({use_dataset.replace('_',' ').title()})")
+plt.show()
+
+# -------------------------------
+# STEP 9: Feature Importance Plot
+# -------------------------------
+importances = model.feature_importances_
+indices = np.argsort(importances)[::-1]
+
+plt.figure(figsize=(8,5))
+plt.title("Top Feature Importances (Random Forest)")
+plt.bar(range(10), importances[indices[:10]], align="center")
+plt.xticks(range(10), np.array(data.feature_names)[indices[:10]], rotation=45, ha="right")
+plt.tight_layout()
+plt.show()
